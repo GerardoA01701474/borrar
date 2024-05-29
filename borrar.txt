@@ -104,3 +104,44 @@ In this project, we successfully developed a predictive model to detect breast c
 This project demonstrates the power of data-driven approaches in healthcare and highlights the importance of early and accurate diagnosis in the fight against breast cancer.
 
 *Note: Please replace placeholder metrics with actual values from your model evaluations.*
+
+
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from collections import Counter
+
+# Crear el DataFrame con la columna 'A' que contiene listas
+data = {
+    'A': [
+        ['lu03:30', 'lu4:00', 'sa3:30', 'sa4:00'],
+        ['ma05:00', 'ma05:30', 'vi06:00', 'vi06:30'],
+        ['mi07:00', 'mi07:30', 'do08:00', 'do08:30'],
+        ['lu03:30', 'lu4:00', 'vi06:00', 'vi06:30']
+    ]
+}
+
+df = pd.DataFrame(data)
+
+# Aplanar las listas en una sola lista
+all_times = [time for sublist in df['A'] for time in sublist]
+
+# Contar la frecuencia de cada horario
+time_counts = Counter(all_times)
+
+# Ordenar los horarios. Aquí asumimos un formato 'ddhh:mm' donde 'dd' es el día y 'hh:mm' es la hora.
+sorted_times = sorted(time_counts.items(), key=lambda x: (x[0][:2], x[0][2:]))
+
+# Convertir los resultados ordenados en un DataFrame para facilitar la visualización
+time_counts_df = pd.DataFrame(sorted_times, columns=['Time', 'Count'])
+
+# Crear el histograma
+plt.figure(figsize=(10, 6))
+plt.bar(time_counts_df['Time'], time_counts_df['Count'])
+plt.xlabel('Horarios')
+plt.ylabel('Frecuencia')
+plt.title('Frecuencia de Horarios')
+plt.xticks(rotation=45)
+plt.show()
+
