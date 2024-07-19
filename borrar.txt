@@ -1,214 +1,27 @@
-# Breast Cancer Detection Project
-
-## Introduction
-
-Breast cancer is one of the most common types of cancer among women worldwide. Early detection and accurate diagnosis are crucial for effective treatment and improved patient outcomes. In this project, we developed a predictive model to distinguish between benign and malignant breast tissues using tabular data provided by Mayo Clinic. Our model utilizes various features of cell nuclei obtained from fine needle aspirate (FNA) biopsies of breast masses. These features include:
-
-- Clump Thickness
-- Size Uniformity
-- Marginal Adhesion
-- Epithelial Size
-- Bare Nucleoli
-- Bland Chromatin
-- Normal Nucleoli
-
-## Data Preprocessing
-
-Data preprocessing is a critical step to ensure the quality and reliability of the model. This involves handling missing values, encoding categorical variables, and normalizing the data. Here's a summary of the preprocessing steps we followed:
-
-1. **Loading Data**: The dataset was loaded into a pandas DataFrame.
-2. **Handling Missing Values**: We checked for and handled any missing values to maintain data integrity.
-3. **Data Cleaning**: Categorical variables were converted as necessary to facilitate analysis.
-
-## Exploratory Data Analysis (EDA)
-
-Exploratory Data Analysis helps us understand the relationships between features and the target variable, as well as the distribution and balance of classes.
-
-### Correlation Matrix
-
-We plotted a correlation matrix to visualize the relationships between the features and the target variable. This helps in identifying which features are most strongly correlated with malignancy.
-
-![Correlation Matrix](path_to_correlation_matrix_image)
-
-### Box Plots of Variables
-
-Box plots were created for each feature to compare the distribution of values between benign and malignant cases. These plots highlight any significant differences in feature values across the classes.
-
-![Box Plot Example](path_to_box_plot_image)
-
-### Class Balance
-
-We also examined the balance of classes in our dataset. This is crucial because an imbalanced dataset can lead to biased model predictions. Our data showed the following class distribution:
-
-- Class 2: Benign
-- Class 4: Malignant
-
-![Class Balance](path_to_class_balance_image)
-
-## Baseline Model: Logistic Regression
-
-To establish a baseline for comparison, we first implemented a logistic regression model. Logistic regression is a simple yet effective model for binary classification tasks.
-
-### Model Training
-
-The logistic regression model was trained on the processed dataset. We split the data into training and testing sets to evaluate the model's performance accurately.
-
-### Model Evaluation
-
-The performance of the logistic regression model was evaluated using the following metrics:
-
-- **Accuracy (ACC)**: Measures the proportion of correctly classified instances.
-- **Precision**: The ratio of true positive predictions to the total predicted positives.
-- **Recall**: The ratio of true positive predictions to the total actual positives.
-- **False Positive Rate (FPR)**: The ratio of false positives to the total actual negatives.
-- **Confusion Matrix**: Provides a summary of the prediction results on the classification problem.
-
-| Metric           | Value  |
-|------------------|--------|
-| Accuracy         | 0.95   |
-| Precision        | 0.92   |
-| Recall           | 0.89   |
-| False Positive Rate | 0.05  |
-| Confusion Matrix | [[85, 5], [10, 100]] |
-
-## Improved Model: XGBoost
-
-Building on the baseline model, we implemented an XGBoost classifier. XGBoost is a powerful ensemble learning algorithm known for its high performance and accuracy in classification tasks.
-
-### Model Training
-
-The XGBoost model was trained using the same training and testing split. XGBoost's ability to handle missing values and its regularization capabilities make it a robust choice for our prediction task.
-
-### Model Evaluation
-
-The XGBoost model's performance was evaluated using the same set of metrics:
-
-- **Accuracy (ACC)**: Measures the proportion of correctly classified instances.
-- **Precision**: The ratio of true positive predictions to the total predicted positives.
-- **Recall**: The ratio of true positive predictions to the total actual positives.
-- **False Positive Rate (FPR)**: The ratio of false positives to the total actual negatives.
-- **Confusion Matrix**: Provides a summary of the prediction results on the classification problem.
-
-| Metric           | Value  |
-|------------------|--------|
-| Accuracy         | 0.98   |
-| Precision        | 0.95   |
-| Recall           | 0.93   |
-| False Positive Rate | 0.02  |
-| Confusion Matrix | [[90, 2], [8, 105]] |
-
-## Conclusion
-
-In this project, we successfully developed a predictive model to detect breast cancer using tabular data. Starting with a baseline logistic regression model, we achieved promising initial results. By leveraging the advanced capabilities of XGBoost, we were able to significantly improve the model's performance. The evaluation metrics indicate that the XGBoost model provides higher accuracy, precision, and recall, making it a more robust and reliable tool for breast cancer detection.
-
-This project demonstrates the power of data-driven approaches in healthcare and highlights the importance of early and accurate diagnosis in the fight against breast cancer.
-
-*Note: Please replace placeholder metrics with actual values from your model evaluations.*
-
-
-
-
 import pandas as pd
-import matplotlib.pyplot as plt
-from collections import Counter
+from openpyxl import load_workbook
 
-# Crear el DataFrame con la columna 'A' que contiene listas
-data = {
-    'A': [
-        ['lu03:30', 'lu4:00', 'sa3:30', 'sa4:00'],
-        ['ma05:00', 'ma05:30', 'vi06:00', 'vi06:30'],
-        ['mi07:00', 'mi07:30', 'do08:00', 'do08:30'],
-        ['lu03:30', 'lu4:00', 'vi06:00', 'vi06:30']
-    ]
-}
+# Ruta al archivo Excel
+path = 'path.xlsx'
 
-df = pd.DataFrame(data)
+# Leer el DataFrame desde una hoja específica del archivo Excel
+df = pd.read_excel(path, sheet_name='Sheet1')
 
-# Aplanar las listas en una sola lista
-all_times = [time for sublist in df['A'] for time in sublist]
+# Modificar el DataFrame (ejemplo: agregar una columna)
+df['NewColumn'] = 'NewValue'
 
-# Contar la frecuencia de cada horario
-time_counts = Counter(all_times)
+# Cargar el libro de trabajo existente
+book = load_workbook(path)
 
-# Ordenar los horarios. Aquí asumimos un formato 'ddhh:mm' donde 'dd' es el día y 'hh:mm' es la hora.
-sorted_times = sorted(time_counts.items(), key=lambda x: (x[0][:2], x[0][2:]))
+# Crear el escritor de Excel con el libro de trabajo cargado en modo append
+with pd.ExcelWriter(path, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+    writer.book = book
 
-# Convertir los resultados ordenados en un DataFrame para facilitar la visualización
-time_counts_df = pd.DataFrame(sorted_times, columns=['Time', 'Count'])
+    # Opcional: cargar las hojas existentes en el libro de trabajo
+    writer.sheets = {ws.title: ws for ws in book.worksheets}
 
-# Crear el histograma
-plt.figure(figsize=(10, 6))
-plt.bar(time_counts_df['Time'], time_counts_df['Count'])
-plt.xlabel('Horarios')
-plt.ylabel('Frecuencia')
-plt.title('Frecuencia de Horarios')
-plt.xticks(rotation=45)
-plt.show()
+    # Escribir el DataFrame modificado a la misma hoja
+    df.to_excel(writer, sheet_name='Sheet1', index=False)
 
-
-
-
-
-
-
-
-# Breast Cancer Detection Project
-
-## Project Summary
-
-This project aims to develop a predictive model to distinguish between benign and malignant breast tissues using tabular data provided by Mayo Clinic. The project follows the standard data science steps:
-
-1. **Business Understanding**: 
-   - **Objective**: Improve the accuracy of early breast cancer detection to increase survival rates and reduce the number of incorrect diagnoses.
-   - **Benefits**: Early and accurate diagnosis can lead to more effective treatment and better patient outcomes.
-
-2. **Data Understanding**: 
-   - **Data Description**: The dataset includes features of cell nuclei obtained from fine needle aspirates (FNA) of breast masses. The features include clump thickness, size uniformity, marginal adhesion, epithelial size, bare nucleoli, bland chromatin, and normal nucleoli.
-   - **Data Exploration**: Exploratory Data Analysis (EDA) was conducted to understand the distribution of features and their relationship with the target variable.
-
-3. **Data Preparation**:
-   - **Data Cleaning**: Handling missing values and converting categorical variables.
-   - **Data Transformation**: Normalizing features and creating new variables if necessary.
-
-4. **Modeling**:
-   - **Baseline Models**: A logistic regression model was implemented as a benchmark.
-   - **Advanced Models**: XGBoost was used to improve the accuracy and performance of the model.
-
-5. **Evaluation**:
-   - **Evaluation Metrics**: Accuracy, precision, recall, false positive rate, and confusion matrix.
-   - **Model Comparison**: The results of the logistic regression model and the XGBoost model were compared to determine the best approach.
-
-## Project Presentation
-
-For a detailed overview of the project, please refer to the presentation at the following link:
-
-[PowerPoint Presentation](link_to_your_presentation)
-
-## Repository Navigation
-
-The repository is structured as follows:
-
-- **data/**: Contains the data used in the project.
-  - `data.csv`
-  - `data_description.txt`
-
-- **notebooks/**: 
-  - **integrant1/**: Jupyter notebook with code from team member 1.
-    - `notebook_integrant1.ipynb`
-  - **integrant2/**: Jupyter notebook with code from team member 2.
-    - `notebook_integrant2.ipynb`
-  - **integrant3/**: Jupyter notebook with code from team member 3.
-    - `notebook_integrant3.ipynb`
-  - **integrant4/**: Jupyter notebook with code from team member 4.
-    - `notebook_integrant4.ipynb`
-  - **Final Project Notebook**: Final Jupyter notebook containing all the necessary code for reproducing the project.
-    - `final_project_notebook.ipynb`
-
-Each Jupyter notebook in the subfolders of the team members contains the code and analysis conducted by each member. The final notebook combines the work of all team members and presents the complete project workflow.
-
----
-
-If you have any questions or suggestions, feel free to open an issue or contact us.
-
-Thank you for your interest in our project!
-
+    # Guardar el libro de trabajo
+    writer.save()
